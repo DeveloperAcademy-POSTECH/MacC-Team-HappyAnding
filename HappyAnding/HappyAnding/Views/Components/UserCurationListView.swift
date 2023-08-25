@@ -23,7 +23,7 @@ struct UserCurationListView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(alignment: .bottom) {
-                SubtitleTextView(text: data.title ?? "")
+                SubtitleTextView(text: data.title )
                     .onTapGesture { }
                 Spacer()
                 
@@ -59,7 +59,7 @@ struct UserCurationListView: View {
             ForEach(Array(shortcutsZipViewModel.curationsMadeByUser.enumerated()), id: \.offset) { index, curation in
 
                 if index < 2 {
-                    UserCurationCell(curation: curation,
+                    UserCurationCell(curation: .constant(curation),
                                      lineLimit: 2,
                                      navigationParentView: .curations)
                     .navigationLinkRouter(data: curation)
@@ -77,10 +77,15 @@ struct UserCurationListView: View {
     
     @ViewBuilder
     private func writeCurationView() -> some View {
-        WriteCurationSetView(isWriting: $isWriting, curation: $curation, isEdit: false)
-        .navigationDestination(for: WriteCurationInfoType.self) { data in
-            WriteCurationInfoView(data: data, isWriting: $isWriting)
-        }
+        WriteCurationSetView(isWriting: $isWriting, viewModel: WriteCurationViewModel())
+            .navigationDestination(for: WriteCurationViewModel.self) { data in
+                WriteCurationInfoView(viewModel: data, isWriting: $isWriting)
+                    .onDisappear(){
+                        if #available(iOS 16.1, *) {
+                            writeCurationNavigation.navigationPath = .init()
+                        }
+                    }
+            }
     }
 }
 
